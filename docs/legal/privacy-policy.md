@@ -63,7 +63,7 @@ When an OmO process dies, the next OmO process to start reports it: operating sy
 - Prompts, model replies, or any fragment of either
 - Code, diffs, file names, file or folder paths, repository, branch, or project names
 - Commands you ran, logs, error messages, or stack traces
-- Account names, emails, API keys, tokens, or environment variable values
+- Account names, emails, API keys, tokens, or environment variable values, other than the shell program name, the terminal application name, and the CI flag listed above
 - Screenshots, window titles, or typed text from computer use
 - The names of your own skills, providers, models, or gateways
 - Your hostname, IP address, or any hardware serial
@@ -151,7 +151,7 @@ Nobody else receives raw events. We publish only aggregates, such as how many in
 
 ## 7. Files OmO stores on your computer for telemetry
 
-- `~/.omo/agent/omo-senpi/omo-native/install-id`: the random install id, created with owner-only permissions. Deleting it gives the installation a fresh id on the next run; the old hash can then no longer be linked to the new one.
+- `~/.omo/agent/omo-senpi/omo-native/install-id`: the random install id, created with owner-only permissions. Deleting it gives the installation a fresh id on the next run. A session started before the deletion and resumed after it keeps its session hash, which still links the old and new install hashes; to break that link too, also delete `session-id-salt` in the same folder.
 - `<state>/session-summary/`: the open session summary of each session and events waiting for delivery. They hold numbers, masked model names, hashed session ids, and the path of the project each window was recorded in; the path is read back only to re-check that project's telemetry setting and is never sent.
 - Codex adapter: `$XDG_DATA_HOME/omo-codex/posthog-activity.json` (default `~/.local/share/omo-codex/posthog-activity.json`), holding the last UTC day a daily event was sent.
 - OpenCode plugin: local configuration and daily-deduplication state.
