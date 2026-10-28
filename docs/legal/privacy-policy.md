@@ -55,7 +55,7 @@ When an OmO process dies, the next OmO process to start reports it: operating sy
 
 ### Derived on PostHog's servers
 
-- An approximate country and continent, derived from the IP address of the connection. PostHog is configured to discard the IP address itself, and city, postal code, and coordinate fields are dropped. OmO never writes an IP address into an event and stores none locally. The country can be wrong behind a VPN, proxy, or mobile network, and for an event delivered late it reflects the network at delivery time. Events received before October 24, 2026 may carry city-level fields; an erasure request covers them.
+- An approximate country and continent, derived from the IP address of the connection. PostHog is configured to discard the IP address itself, and city, postal code, and coordinate fields are dropped. OmO never writes an IP address into an event and stores none locally. The country can be wrong behind a VPN, proxy, or mobile network, and for an event delivered late it reflects the network at delivery time. Events received before October 15, 2026 also carry the IP address of the connection, and events received before October 24, 2026 may carry city-level fields; an erasure request covers them.
 - PostHog's client library adds its own name and version to each event.
 
 ### Never sent
