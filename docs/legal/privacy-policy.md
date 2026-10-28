@@ -151,7 +151,7 @@ Nobody else receives raw events. We publish only aggregates, such as how many in
 
 ## 7. Files OmO stores on your computer for telemetry
 
-- `~/.omo/agent/omo-senpi/omo-native/install-id`: the random install id, created with owner-only permissions. Deleting it gives the installation a fresh id on the next run. A session started before the deletion and resumed after it keeps its session hash, which still links the old and new install hashes; to break that link too, also delete `session-id-salt` in the same folder.
+- `~/.omo/agent/omo-senpi/omo-native/install-id`: the random install id, created with owner-only permissions. Deleting it gives the installation a fresh id on the next run. A session started before the deletion and resumed after it keeps its session hash, which still links the old and new install hashes; to break that link too, also delete `<agent home>/omo-senpi/omo-native/session-id-salt` (agent home is `~/.omo/agent` by default).
 - `<state>/session-summary/`: the open session summary of each session and events waiting for delivery. They hold numbers, masked model names, hashed session ids, and the path of the project each window was recorded in; the path is read back only to re-check that project's telemetry setting and is never sent.
 - Codex adapter: `$XDG_DATA_HOME/omo-codex/posthog-activity.json` (default `~/.local/share/omo-codex/posthog-activity.json`), holding the last UTC day a daily event was sent.
 - OpenCode plugin: local configuration and daily-deduplication state.
