@@ -17,11 +17,11 @@ Use the private form or email, never a public issue, for anything that contains 
 
 ## 2. What telemetry sends
 
-While OmO runs, it sends product telemetry to PostHog (section 5). Each event is a fixed set of fields, and every field is a boolean, a number, a size bucket, or a value from a published list. No free text leaves your computer. The complete, machine-checked list of events and fields is in the [telemetry reference](../reference/senpi-telemetry.md); the Codex adapter's single event is in the [Codex telemetry reference](../reference/codex-telemetry.md). If this notice and those lists ever differ, the lists are authoritative and this notice is wrong.
+While OmO runs, it sends product telemetry to PostHog (section 5). OmO Native events (the CLI and Desktop) are a fixed set of fields, and each field is a boolean, a number, a size bucket, or a value from a published list. The once-a-day activity events described under "About your computer" also carry a few strings exactly as your system reports them (CPU model, terminal application, shell name, locale). The complete, machine-checked list of events and fields is in the [telemetry reference](../reference/senpi-telemetry.md); the Codex adapter's single event is in the [Codex telemetry reference](../reference/codex-telemetry.md). If this notice and those lists ever differ, the lists are authoritative and this notice is wrong.
 
 ### Identifiers
 
-- **Install hash.** The first time OmO runs it creates a random install id and stores it in a file on your computer. The id is random: it is not derived from your name, hostname, hardware, or accounts. Only its SHA-256 hash is sent. This is the only value that links events from the same installation. It is pseudonymous: we cannot tell who you are from it, but it does tell one installation from another, so we treat it as personal data wherever the law does.
+- **Install hash.** The first time OmO runs it creates a random install id and stores it in a file on your computer. The id is random: it is not derived from your name, hostname, hardware, or accounts. Only its SHA-256 hash is sent. For OmO Native events this is the only value that links events from the same installation; each product's once-a-day activity event uses its own random install id the same way (section 7). It is pseudonymous: we cannot tell who you are from it, but it does tell one installation from another, so we treat it as personal data wherever the law does.
 - **Session hash.** The session id combined with a random per-computer salt, then hashed. Sessions from different computers cannot be matched.
 - **Event id.** A random id per event, used only to drop duplicates.
 
@@ -31,8 +31,7 @@ Versions of OmO before this release also sent a one-way hash of your computer's 
 
 - OmO version, which surface ran (CLI or Desktop), and whether the run was in CI
 - Operating system and version, CPU architecture and core count, memory size as a bucket, and time zone
-- OpenCode plugin: OmO version, plugin name, runtime, OS family, locale, time zone
-- Codex adapter: also locale, shell, terminal, CPU model, total memory in GB, and runtime version
+- Once a day, each product (OmO Native, the OpenCode plugin, the Codex adapter) also sends an activity event with: package name and version, runtime and its version, operating system name, release, type and architecture, CPU core count and CPU model name as reported by the operating system, total memory in GB, locale, time zone, the name of your login shell program (for example `zsh`, never its path), the terminal application name (`TERM_PROGRAM`, for example `iTerm.app`), and whether the run was in CI
 
 ### About your configuration
 
@@ -44,7 +43,7 @@ Versions of OmO before this release also sent a one-way hash of your computer's 
 
 - A daily-active ping, at most once per UTC day per installation. The OpenCode plugin and the Codex adapter send only this ping with the device fields above.
 - Session starts and session summaries: start reason, root or child session, number of turns, token counts, cost totals, counts of errored and aborted turns, tool result and error counts.
-- Per-turn token counts and cost for about 5% of sessions (summaries are sent for every session).
+- Per-turn token counts and cost for about 5% of sessions by default (summaries are sent for every session).
 - Prompt metadata only: length bucket, whether a keyword was used, how the prompt was submitted. Never the prompt.
 - Which built-in skills, agents, categories, and features were used; for each delegated task its outcome, duration, tokens, and cost; counters and timings for parallel tool use and helper agents.
 - Computer use: when it was activated, which permission kind was denied, and an error code from a fixed list. Never screen content, window titles, application names, coordinates, or typed text.
@@ -62,14 +61,14 @@ When an OmO process dies, the next OmO process to start reports it: operating sy
 ### Never sent
 
 - Prompts, model replies, or any fragment of either
-- Code, diffs, file names, paths, folder, repository, branch, or project names
+- Code, diffs, file names, file or folder paths, repository, branch, or project names
 - Commands you ran, logs, error messages, or stack traces
 - Account names, emails, API keys, tokens, or environment variable values
 - Screenshots, window titles, or typed text from computer use
 - The names of your own skills, providers, models, or gateways
 - Your hostname, IP address, or any hardware serial
 
-The field list is enforced in code: a field that is not on it is dropped before sending, and a test fails if the code and the published list disagree.
+For OmO Native events the field list is enforced in code: a field that is not on it is dropped before sending, and a test fails if the code and the published list disagree. The once-a-day activity events send exactly the fields listed under "About your computer".
 
 ## 3. Why we collect it, and on what legal basis
 
@@ -91,14 +90,22 @@ We do not sell the data, use it for advertising, build person profiles, or make 
 
 You are not required to provide any of this data, by law or by contract. Turning telemetry off changes nothing about how OmO works. Turning it off is how you object to this processing (GDPR Article 21) and refuse the overseas transfer in section 5 (PIPA Article 28-8); you do not need to give a reason.
 
-Any one of the following turns everything off, including crash reports:
+Any one of the environment variables below turns everything off in every product, including crash reports. The other switches apply to the product named:
 
-- **OmO Desktop:** choose **Turn telemetry off** when the telemetry notice first appears. Desktop sends nothing before you have seen that notice.
-- **Configuration file** `~/.omo/omo.jsonc`:
+- **OmO Desktop:** choose **Turn telemetry off** when the telemetry notice first appears. Desktop sends nothing before you have answered that notice.
+- **OmO Native (CLI and Desktop runtime), configuration file** `~/.omo/omo.jsonc`:
 
   ```jsonc
   {
     "telemetry": { "enabled": false }
+  }
+  ```
+
+- **OpenCode plugin, configuration file** `~/.omo/omo.jsonc`:
+
+  ```jsonc
+  {
+    "[opencode]": { "telemetry": false }
   }
   ```
 
@@ -113,7 +120,7 @@ Any one of the following turns everything off, including crash reports:
 
 - **Codex adapter only:** `OMO_CODEX_DISABLE_POSTHOG=1` or `OMO_CODEX_SEND_ANONYMOUS_TELEMETRY=0`.
 
-Telemetry is off automatically in CI and test runs. When it is off, no telemetry request is made and events already queued are dropped. Opting out applies from that moment; to delete what was sent earlier, see section 8.
+OmO Native turns telemetry off automatically in CI and test runs; the OpenCode plugin and the Codex adapter do not, and mark such events with `ci: true`. When telemetry is off, no telemetry request is made and events already queued are dropped. Opting out applies from that moment; to delete what was sent earlier, see section 8.
 
 ## 5. Who receives the data: our processor, and the transfer abroad
 
@@ -148,7 +155,7 @@ Nobody else receives raw events. We publish only aggregates, such as how many in
 - `<state>/session-summary/`: the open session summary of each session and events waiting for delivery. They hold numbers, masked model names, hashed session ids, and the path of the project each window was recorded in; the path is read back only to re-check that project's telemetry setting and is never sent.
 - Codex adapter: `$XDG_DATA_HOME/omo-codex/posthog-activity.json` (default `~/.local/share/omo-codex/posthog-activity.json`), holding the last UTC day a daily event was sent.
 - OpenCode plugin: local configuration and daily-deduplication state.
-- The OpenCode plugin, the Codex adapter, and the older `omo_senpi_daily_active` event each keep their own random `install-id` file next to their daily-deduplication state, created only when a daily event is about to be sent. Only its hash is sent.
+- Each product's once-a-day activity event uses its own random `install-id` file, created only when that event is about to be sent, and only its hash is sent: OmO Native `~/.omo/agent/omo-senpi/posthog/install-id`, the OpenCode plugin `$XDG_DATA_HOME/oh-my-opencode/install-id`, and the Codex adapter `$XDG_DATA_HOME/omo-codex/install-id` (`$XDG_DATA_HOME` defaults to `~/.local/share`).
 
 Turning telemetry off (section 4) stops OmO from creating new telemetry files and from sending anything.
 
@@ -156,7 +163,7 @@ Turning telemetry off (section 4) stops OmO from creating new telemetry files an
 
 Wherever you live, you can ask us to tell you whether we hold events for your installation and to send them to you (access); to correct or delete them (rectification, erasure); to stop processing them (restriction, suspension of processing); or to stop entirely (objection; section 4 does this immediately and needs no request). Under PIPA you may exercise these rights through a legal representative, and a parent or guardian may exercise them for a child under 14. OmO is not directed at children.
 
-We hold no name, email, or account, so we cannot find your events from who you are (GDPR Article 11). To act on a request we need your install id: the contents of `~/.omo/agent/omo-senpi/omo-native/install-id`. We hash it and act on the matching rows. Send it only through the private form or by email (section 1), never in a public issue. For events that older versions sent under a hostname hash, we can act where our records pair that hash with your install id and no other; a hostname hash shared by several installations cannot be attributed to you and cannot be deleted on request.
+We hold no name, email, or account, so we cannot find your events from who you are (GDPR Article 11). To act on a request we need your install ids: the contents of `~/.omo/agent/omo-senpi/omo-native/install-id` and of every other `install-id` file listed in section 7 that exists on your computer. We hash it and act on the matching rows. Send it only through the private form or by email (section 1), never in a public issue. For events that older versions sent under a hostname hash, we can act where our records pair that hash with your install id and no other; a hostname hash shared by several installations cannot be attributed to you and cannot be deleted on request.
 
 We answer within 10 days, and in any case within the period the law allows. There is no fee, and exercising a right has no effect on your use of OmO.
 
@@ -164,7 +171,7 @@ You may also complain to a supervisory authority. In Korea: the Personal Informa
 
 ## 9. Security
 
-Events travel over TLS. The client enforces a field allowlist and rejects any string on a key ending in `_text`, `_path`, or `_prompt`; CI fails if the code and the published schema diverge. Person profiles are disabled on every event. PostHog is configured to discard the IP address and drop city-level location fields. The install id file is created with owner-only permissions. Access to the PostHog project is limited to the project's maintainers. No transmission or storage is perfectly secure.
+Events travel over TLS. The OmO Native client enforces a field allowlist and rejects any string on a key ending in `_text`, `_path`, or `_prompt`; CI fails if the code and the published schema diverge. Person profiles are disabled on every event. PostHog is configured to discard the IP address and drop city-level location fields. The install id file is created with owner-only permissions. Access to the PostHog project is limited to the project's maintainers. No transmission or storage is perfectly secure.
 
 ## 10. Changes
 

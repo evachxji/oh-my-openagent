@@ -5,6 +5,7 @@ OmO sends pseudonymous usage data so we can see which features people use and wh
 ## What is sent
 
 - the app version, operating system and its version, CPU type and core count, and time zone
+- once a day per product, an activity event that also carries the CPU model name, total memory, locale, the name of your login shell program (for example `zsh`, never its path), and the terminal application name
 - whether a session ran in OmO Desktop or the command line
 - which provider and model ran, when they are ones OmO ships; anything else is sent as `custom`
 - which of OmO's built-in providers you have signed in to or configured, and how many accounts each has, as counts capped at "10 or more"; never an account name, email or key
@@ -32,7 +33,7 @@ OmO creates random, pseudonymous install ids on your computer and stores them th
 
 In OmO Desktop, choose **Turn telemetry off** when the telemetry notice first appears.
 
-Anywhere, add this to `~/.omo/omo.jsonc`:
+For OmO Native (the CLI and the Desktop runtime), add this to `~/.omo/omo.jsonc`:
 
 ```jsonc
 {
@@ -40,7 +41,9 @@ Anywhere, add this to `~/.omo/omo.jsonc`:
 }
 ```
 
-Setting `DO_NOT_TRACK=1`, `OMO_DISABLE_TELEMETRY=1`, `OMO_DISABLE_POSTHOG=1` or `OMO_SEND_ANONYMOUS_TELEMETRY=0` in your environment also turns it off, and it is off automatically in CI and test runs. Turning telemetry off stops all of it, including crash reports, and changes nothing else about how OmO behaves. To have events that were already sent deleted, see "Your rights" in the [privacy policy](../legal/privacy-policy.md).
+For the OpenCode plugin, add `"[opencode]": { "telemetry": false }` to the same file. The Codex adapter is turned off only by the environment variables below.
+
+Setting `DO_NOT_TRACK=1`, `OMO_DISABLE_TELEMETRY=1`, `OMO_DISABLE_POSTHOG=1` or `OMO_SEND_ANONYMOUS_TELEMETRY=0` in your environment turns it off in every product. OmO Native is also off automatically in CI and test runs. Turning telemetry off stops all of it, including crash reports, and changes nothing else about how OmO behaves. To have events that were already sent deleted, see "Your rights" in the [privacy policy](../legal/privacy-policy.md).
 
 ## The full list
 
