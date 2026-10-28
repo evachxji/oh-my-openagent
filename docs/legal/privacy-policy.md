@@ -68,7 +68,7 @@ When an OmO process dies, the next OmO process to start reports it: operating sy
 - The names of your own skills, providers, models, or gateways
 - Your hostname, IP address, or any hardware serial
 
-For OmO Native events the field list is enforced in code: a field that is not on it is dropped before sending, and a test fails if the code and the published list disagree. The once-a-day activity events send exactly the fields listed under "About your computer".
+For OmO Native events the field list is enforced in code: a field that is not on it is dropped before sending, and a test fails if the code and the published list disagree. The once-a-day activity events send the fields listed under "About your computer", plus the product and plugin name, which part of the product sent it, the reason it was sent, and the UTC day.
 
 ## 3. Why we collect it, and on what legal basis
 
@@ -155,7 +155,7 @@ Nobody else receives raw events. We publish only aggregates, such as how many in
 - `<state>/session-summary/`: the open session summary of each session and events waiting for delivery. They hold numbers, masked model names, hashed session ids, and the path of the project each window was recorded in; the path is read back only to re-check that project's telemetry setting and is never sent.
 - Codex adapter: `$XDG_DATA_HOME/omo-codex/posthog-activity.json` (default `~/.local/share/omo-codex/posthog-activity.json`), holding the last UTC day a daily event was sent.
 - OpenCode plugin: local configuration and daily-deduplication state.
-- Each product's once-a-day activity event uses its own random `install-id` file, created only when that event is about to be sent, and only its hash is sent: OmO Native `~/.omo/agent/omo-senpi/posthog/install-id`, the OpenCode plugin `$XDG_DATA_HOME/oh-my-opencode/install-id`, and the Codex adapter `$XDG_DATA_HOME/omo-codex/install-id` (`$XDG_DATA_HOME` defaults to `~/.local/share`).
+- Each product's once-a-day activity event uses its own random `install-id` file, created only when that event is about to be sent, and only its hash is sent: OmO Native `<agent home>/omo-senpi/posthog/install-id` (agent home is `~/.omo/agent` by default), the OpenCode plugin `$XDG_DATA_HOME/oh-my-opencode/install-id`, and the Codex adapter `$XDG_DATA_HOME/omo-codex/install-id` (`$XDG_DATA_HOME` defaults to `~/.local/share`).
 
 Turning telemetry off (section 4) stops OmO from creating new telemetry files and from sending anything.
 
